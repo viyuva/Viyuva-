@@ -1,52 +1,38 @@
-name: Build Android APK
+name: Crear APK de Android
 
 on:
-  push:
-    branches: [ "main", "principal", "master" ]
   workflow_dispatch:
+  push:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Descargar codigo
+      uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Configurar Python
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
+    - name: Instalar dependencias
       run: |
         sudo apt-get update
         sudo apt-get install -y autoconf automake libtool pkg-config cmake gettext build-essential libsqlite3-dev zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libbz2-dev liblzma-dev openjdk-17-jdk unzip zip scons git
         pip install --upgrade buildozer cython==0.29.33
 
-    - name: Create buildozer.spec
+    - name: Crear buildozer.spec
       run: |
-        echo "[app]" > buildozer.spec
-        echo "title = Viyuva" >> buildozer.spec
-        echo "package.name = viyuva" >> buildozer.spec
-        echo "package.domain = org.viyuva" >> buildozer.spec
-        echo "source.dir = ." >> buildozer.spec
-        echo "source.include_exts = py,png,json" >> buildozer.spec
-        echo "version = 0.1" >> buildozer.spec
-        echo "requirements = python3,kivy" >> buildozer.spec
-        echo "orientation = portrait" >> buildozer.spec
-        echo "fullscreen = 0" >> buildozer.spec
-        echo "icon.filename = %(source.dir)s/logo.png" >> buildozer.spec
-        echo "" >> buildozer.spec
-        echo "[buildozer]" >> buildozer.spec
-        echo "log_level = 2" >> buildozer.spec
-        echo "warn_on_root = 1" >> buildozer.spec
+        printf '[app]\ntitle = Viyuva\npackage.name = viyuva\npackage.domain = org.viyuva\nsource.dir = .\nsource.include_exts = py,png,json\nversion = 0.1\nrequirements = python3,kivy\norientation = portrait\nfullscreen = 0\nicon.filename = %%(source.dir)s/logo.png\n\n[buildozer]\nlog_level = 2\nwarn_on_root = 1\n' > buildozer.spec
 
-    - name: Build APK with Buildozer
+    - name: Compilar APK
       run: |
         buildozer -v android debug
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v3
+    - name: Guardar APK
+      uses: actions/upload-artifact@v4
       with:
         name: Viyuva-APK
         path: bin/*.apk
