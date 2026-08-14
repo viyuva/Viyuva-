@@ -12,28 +12,36 @@ jobs:
     - name: Descargar codigo
       uses: actions/checkout@v4
 
-    - name: Configurar Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Instalar dependencias
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y autoconf automake libtool pkg-config cmake gettext build-essential libsqlite3-dev zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libbz2-dev liblzma-dev openjdk-17-jdk unzip zip scons git
-        pip install --upgrade buildozer cython==0.29.33
-
     - name: Crear buildozer.spec
       run: |
-        printf '[app]\ntitle = Viyuva\npackage.name = viyuva\npackage.domain = org.viyuva\nsource.dir = .\nsource.include_exts = py,png,json\nversion = 0.1\nrequirements = python3,kivy\norientation = portrait\nfullscreen = 0\nicon.filename = %%(source.dir)s/logo.png\n\n[buildozer]\nlog_level = 2\nwarn_on_root = 1\n' > buildozer.spec
+        cat << 'EOF' > buildozer.spec
+        [app]
+        title = Viyuva
+        package.name = viyuva
+        package.domain = org.viyuva
+        source.dir = .
+        source.include_exts = py,png,json
+        version = 0.1
+        requirements = python3,kivy
+        orientation = portrait
+        fullscreen = 0
+        icon.filename = %(source.dir)s/logo.png
 
-    - name: Compilar APK
-      run: |
-        buildozer -v android debug
+        [buildozer]
+        log_level = 2
+        warn_on_root = 1
+        EOF
+
+    - name: Compilar APK con Buildozer Action
+      uses: ArtemShedov/buildozer-action@v1.2.0
+      with:
+        command: buildozer -v android debug
+        buildozer_version: master
 
     - name: Guardar APK
       uses: actions/upload-artifact@v4
       with:
         name: Viyuva-APK
         path: bin/*.apk
+        
         
